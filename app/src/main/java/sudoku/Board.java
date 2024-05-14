@@ -2,6 +2,7 @@ package sudoku;
 
 import java.io.InputStream;
 import java.util.HashSet;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -14,7 +15,7 @@ public class Board
         board = new int[9][9];
     }
 
-    public static Board loadBoard(InputStream in)
+    public static Board loadBoard(InputStream in) throws Exception
     {
         Board board = new Board();
         Scanner scanner = new Scanner(in);
@@ -22,7 +23,15 @@ public class Board
         {
             for (int col = 0; col < 9; col++)
             {
+                try{ 
+                    int value = scanner.nextInt();
+                if ((value < 0 || value > 9)|| !board.isLegal(row, col, value)){
+                    throw new Exception();
+                }
                 board.setCell(row, col, scanner.nextInt());
+                } catch (Exception e){
+                    throw new Exception("Invalid board");
+                }
             }
         }
         scanner.close();
@@ -86,6 +95,48 @@ public class Board
             }
         }
         return possibleValues;
+    }
+
+    public boolean isFull()
+    {
+        for (int row = 0; row < 9; row++)
+        {
+            for (int col = 0; col < 9; col++)
+            {
+                if (!hasValue(row, col))
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public boolean won(){
+        if (!isFull()){
+            return false; 
+        }
+
+        for (int i = 0; i < 9; i++){
+            Set<Integer> rowSet = new HashSet<>();
+            Set<Integer> colSet = new HashSet<>();
+            for (int j = 0; j < 9; j++){
+                if (rowSet.contains(getCell(i, j)) || colSet.contains(getCell(j, i))){
+                    return false; 
+                }
+                rowSet.add(getCell(i, j));
+                colSet.add(getCell(j, i));
+            }
+        }
+        return true; 
+    }
+
+    public void clearBoard(){
+        for (int i = 0; i < 9; i++){
+            for (int j = 0; j < 9; j++){
+                setCell(i, j, 0);
+            }
+        }
     }
 
     public String toString()
